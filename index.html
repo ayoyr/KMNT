@@ -234,12 +234,8 @@
                 <div class="tweet-image-container">
                     <img id="image-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='300' viewBox='0 0 500 300'%3E%3Crect fill='%23202327' width='500' height='300'/%3E%3Ctext fill='%2371767b' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3Eここに画像が表示されます%3C/text%3E%3C/svg%3E" alt="アップロードされた画像">
                 </div>
-                 <div class="tweet-actions">
-                    <div class="action-icon" title="返信"><svg viewBox="0 0 24 24"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.031 7.11l-1.118 6.87a1.126 1.126 0 01-2.162-.32l.483-3.05 4.902.002.01-.002c1.78-.11 3.22-1.62 3.22-3.44 0-1.93-1.57-3.5-3.5-3.5h-4.41c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5h3.451V6h-3.451c-3.31 0-6 2.69-6 6s2.69 6 6 6h.5c.414 0 .75.336.75.75s-.336.75-.75.75h-.5c-4.42 0-8.005-3.58-8.005-8z"></path></g></svg><span id="reply-count">0</span></div>
-                    <div class="action-icon" title="リツイート"><svg viewBox="0 0 24 24"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V10c0-1.1-.896-2-2-2H11v2h5.5c.276 0 .5.22.5.5v.19l-1.127-.01c-1.082-.01-2.091.46-2.771 1.26l-3.37 3.93.89.76 3.37-3.93c.48-.56 1.16-.88 1.88-.88l1.13.01V10c0-.28-.224-.5-.5-.5z"></path></g></svg><span>0</span></div>
-                    <div class="action-icon" title="いいね"><svg viewBox="0 0 24 24"><g><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.223c-2.07 0-3.903 1.988-3.903 4.255 0 5.74 6.036 11.52 8.55 11.52.24 0 8.55-5.78 8.55-11.52 0-2.267-1.833-4.255-3.903-4.255-1.522 0-2.923 1.17-3.464 2.107-.54 1.05-.54 2.33 0 3.38.54 1.05 1.942 2.107 3.464 2.107v-2.014c-1.13 0-2.13-.53-2.68-1.34-.55-.81-.55-1.83 0-2.64.55-.81 1.55-1.34 2.68-1.34v-2.015c-2.14 0-3.56 1.4-4.06 2.47-.5 1.07-.5 2.31 0 3.38.5 1.07 1.92 2.47 4.06 2.47v2.014c-1.522 0-2.923-1.17-3.464-2.107-.54-1.05-.54-2.33 0-3.38-.54-1.05-1.942-2.107-3.464-2.107z"></path></g></svg><span>0</span></div>
-                    <div class="action-icon" title="ブックマーク"><svg viewBox="0 0 24 24"><g><path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"></path></g></svg></div>
-                    <div class="action-icon" title="共有"><svg viewBox="0 0 24 24"><g><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41L7.71 9.71 6.3 8.29l5.7-5.7zM20 15v4c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4H2v4c0 2.21 1.79 4 4 4h12c2.21 0 4-1.79 4-4v-4h-2z"></path></g></svg></div>
+                <div id="main-post-actions" class="tweet-actions">
+                    <!-- メイン投稿のアクションはJSで生成 -->
                 </div>
             </div>
         </article>
@@ -254,33 +250,36 @@
 
     <script src="config.js"></script>
     <script>
-        // --- 要素の取得とグローバル変数の定義 (すべてvarを使用) ---
+        // --- 要素の取得 (const/letの代わりにvarを使用) ---
         var imageUpload = document.getElementById('image-upload');
         var fileNameSpan = document.getElementById('file-name');
         var generateButton = document.getElementById('generate-button');
         var imagePreview = document.getElementById('image-preview');
         var loader = document.getElementById('loader');
         var commentsArea = document.getElementById('comments-area');
-        var replyCountSpan = document.getElementById('reply-count');
-        
+        var mainPostActions = document.getElementById('main-post-actions');
+
         var uploadedImageBase64 = null;
         var uploadedImageType = null;
 
-        // --- 関数定義 (すべて function キーワードを使用) ---
+        // --- SVGパスデータ (グローバル変数として保持) ---
+        var SVG_PATHS = {
+            reply: "M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.031 7.11l-1.118 6.87a1.126 1.126 0 01-2.162-.32l.483-3.05 4.902.002.01-.002c1.78-.11 3.22-1.62 3.22-3.44 0-1.93-1.57-3.5-3.5-3.5h-4.41c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5h3.451V6h-3.451c-3.31 0-6 2.69-6 6s2.69 6 6 6h.5c.414 0 .75.336.75.75s-.336.75-.75.75h-.5c-4.42 0-8.005-3.58-8.005-8z",
+            retweet: "M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V10c0-1.1-.896-2-2-2H11v2h5.5c.276 0 .5.22.5.5v.19l-1.127-.01c-1.082-.01-2.091.46-2.771 1.26l-3.37 3.93.89.76 3.37-3.93c.48-.56 1.16-.88 1.88-.88l1.13.01V10c0-.28-.224-.5-.5-.5z",
+            like: "M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.223c-2.07 0-3.903 1.988-3.903 4.255 0 5.74 6.036 11.52 8.55 11.52.24 0 8.55-5.78 8.55-11.52 0-2.267-1.833-4.255-3.903-4.255-1.522 0-2.923 1.17-3.464 2.107-.54 1.05-.54 2.33 0 3.38.54 1.05 1.942 2.107 3.464 2.107v-2.014c-1.13 0-2.13-.53-2.68-1.34-.55-.81-.55-1.83 0-2.64.55-.81 1.55-1.34 2.68-1.34v-2.015c-2.14 0-3.56 1.4-4.06 2.47-.5 1.07-.5 2.31 0 3.38.5 1.07 1.92 2.47 4.06 2.47v2.014c-1.522 0-2.923-1.17-3.464-2.107-.54-1.05-.54-2.33 0-3.38-.54-1.05-1.942-2.107-3.464-2.107z",
+            bookmark: "M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z",
+            share: "M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41L7.71 9.71 6.3 8.29l5.7-5.7zM20 15v4c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4H2v4c0 2.21 1.79 4 4 4h12c2.21 0 4-1.79 4-4v-4h-2z"
+        };
+        
+        // --- 関数定義 ---
 
         function updateButtonState() {
             var isApiKeyValid = typeof API_KEY !== 'undefined' && API_KEY && API_KEY !== "ここにあなたのAPIキーを貼り付けてください";
-            if (isApiKeyValid && uploadedImageBase64) {
-                generateButton.disabled = false;
-            } else {
-                generateButton.disabled = true;
-            }
+            generateButton.disabled = !(isApiKeyValid && uploadedImageBase64);
         }
 
         function processFile(file) {
-            if (!file || !file.type.startsWith('image/')) {
-                return;
-            }
+            if (!file || !file.type.startsWith('image/')) return;
             fileNameSpan.textContent = file.name || 'クリップボードの画像 (' + new Date().toLocaleTimeString() + ')';
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -294,119 +293,133 @@
 
         function callGeminiApi(apiKey, imageBase64, imageType) {
             var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=' + apiKey;
-            
-            // promptを文字列連結で作成
-            var prompt = 'あなたは人気のソーシャルメディアコンサルタントです。' +
-                'この画像に対するX（旧Twitter）でのリアルなリプライを、JSON配列形式で20個生成してください。\n\n' +
-                '制約条件:\n' +
-                '- 各要素は `username` (日本語のリアルな名前), `screen_name` (@から始まる英数字のID), `comment` (絵文字を適度に含んだ140字以内のコメント) の3つのキーを持つオブジェクトとします。\n' +
-                '- コメントの内容は、称賛、ユーモア、質問、少し批判的な意見、共感など、多様な視点を含めてください。\n' +
-                '- 人間の自然な反応をシミュレートしてください。\n' +
-                '- 出力はJSON配列のみとし、前後に余計なテキストは含めないでください。\n\n' +
-                '例:\n' +
-                '[\n' +
-                '  {"username": "山田 花子", "screen_name": "@yamada_hanako", "comment": "わー！すごく綺麗な写真ですね！✨どこの風景ですか？"},\n' +
-                '  {"username": "猫好きゲーマー", "screen_name": "@cat_game_lover", "comment": "この構図、天才すぎる…真似したいけど無理だろうな😂"}\n' +
-                ']';
-
-            var body = {
-                "contents": [{
-                    "parts": [
-                        { "text": prompt },
-                        { "inline_data": { "mime_type": imageType, "data": imageBase64 } }
-                    ]
-                }]
-            };
-
-            // fetchとPromiseの.then/.catch/.finallyを使用
-            return fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            }).then(function(response) {
-                if (!response.ok) {
-                    return response.json().then(function(errorData) {
-                        var err = new Error('APIリクエストに失敗しました: ' + errorData.error.message);
-                        throw err;
-                    });
-                }
-                return response.json();
-            }).then(function(data) {
-                var textResponse = data.candidates[0].content.parts[0].text;
-                var jsonString = textResponse.replace(/^```(json)?\s*|```\s*$/g, '');
-                return JSON.parse(jsonString);
-            });
+            var prompt = 'あなたは人気のソーシャルメディアコンサルタントです。この画像に対するX（旧Twitter）でのリアルなリプライを、JSON配列形式で20個生成してください。\n\n制約条件:\n- 各要素は `username` (日本語のリアルな名前), `screen_name` (@から始まる英数字のID), `comment` (絵文字を適度に含んだ140字以内のコメント) の3つのキーを持つオブジェクトとします。\n- コメントの内容は、称賛、ユーモア、質問、少し批判的な意見、共感など、多様な視点を含めてください。\n- 人間の自然な反応をシミュレートしてください。\n- 出力はJSON配列のみとし、前後に余計なテキストは含めないでください。';
+            var body = { "contents": [{ "parts": [{ "text": prompt }, { "inline_data": { "mime_type": imageType, "data": imageBase64 } }] }] };
+            return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.json().then(function(err) { throw new Error(err.error.message); });
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    var textResponse = data.candidates[0].content.parts[0].text;
+                    var jsonString = textResponse.replace(/^```(json)?\s*|```\s*$/g, '');
+                    return JSON.parse(jsonString);
+                });
+        }
+        
+        function createSvgElement(pathData) {
+            var svgNS = "http://www.w3.org/2000/svg";
+            var svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("viewBox", "0 0 24 24");
+            var g = document.createElementNS(svgNS, "g");
+            var path = document.createElementNS(svgNS, "path");
+            path.setAttribute("d", pathData);
+            g.appendChild(path);
+            svg.appendChild(g);
+            return svg;
         }
 
-        function escapeHtml(unsafe) {
-            if (typeof unsafe !== 'string') {
-                return '';
+        function createActionIcon(type, countText) {
+            var container = document.createElement('div');
+            container.className = 'action-icon';
+            container.setAttribute('title', type.charAt(0).toUpperCase() + type.slice(1)); // "reply" -> "Reply"
+            
+            var svg = createSvgElement(SVG_PATHS[type]);
+            container.appendChild(svg);
+
+            if (countText !== undefined && countText !== null) {
+                var span = document.createElement('span');
+                // 特別にIDを振る必要があるのはメイン投稿の返信数のみ
+                if (type === 'reply' && countText === '0') {
+                    span.id = 'reply-count';
+                }
+                span.textContent = countText;
+                container.appendChild(span);
             }
-            return unsafe.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, """).replace(/'/g, "'");
+            return container;
         }
         
         function displayComments(comments) {
-            if (Object.prototype.toString.call(comments) !== '[object Array]') {
-                console.error("APIのレスポンスが配列ではありません:", comments);
-                var err = new Error("APIから予期しない形式のデータが返されました。");
-                throw err;
-            }
-
-            replyCountSpan.textContent = comments.length;
-            commentsArea.innerHTML = ''; // コメントエリアをクリア
-
+            commentsArea.innerHTML = '';
+            
             var header = document.createElement('div');
             header.className = 'comments-header';
             header.textContent = '返信';
             commentsArea.appendChild(header);
 
-            comments.forEach(function(comment, index) {
-                var tweetElement = document.createElement('article');
-                tweetElement.className = 'tweet';
-                var avatarUrl = 'https://i.pravatar.cc/48?u=' + (comment.screen_name || index);
+            // メイン投稿の返信数を更新
+            var replyCountSpan = document.getElementById('reply-count');
+            if (replyCountSpan) {
+                replyCountSpan.textContent = comments.length;
+            }
+
+            comments.forEach(function(commentData, index) {
+                var tweet = document.createElement('article');
+                tweet.className = 'tweet';
                 
-                var randomReplies = Math.floor(Math.random() * 10);
-                var randomRetweets = Math.floor(Math.random() * 50);
-                var randomLikes = Math.floor(Math.random() * 200);
+                var avatar = document.createElement('img');
+                avatar.className = 'avatar';
+                avatar.src = 'https://i.pravatar.cc/48?u=' + (commentData.screen_name || index);
+                avatar.alt = 'アバター';
+                tweet.appendChild(avatar);
 
-                // innerHTMLを文字列連結で作成
-                var htmlString = '';
-                htmlString += '<img src="' + avatarUrl + '" alt="アバター" class="avatar">';
-                htmlString += '<div class="tweet-content">';
-                htmlString +=   '<div class="tweet-header">';
-                htmlString +=     '<span class="username">' + escapeHtml(comment.username) + '</span>';
-                htmlString +=     '<span class="screen-name">' + escapeHtml(comment.screen_name) + '</span>';
-                htmlString +=     '<span class="timestamp">· ' + (index + 1) + '分前</span>';
-                htmlString +=   '</div>';
-                htmlString +=   '<div class="tweet-body">' + escapeHtml(comment.comment) + '</div>';
-                htmlString +=   '<div class="tweet-actions">';
-                htmlString +=     '<div class="action-icon" title="返信">';
-                htmlString +=       '<svg viewBox="0 0 24 24"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.031 7.11l-1.118 6.87a1.126 1.126 0 01-2.162-.32l.483-3.05 4.902.002.01-.002c1.78-.11 3.22-1.62 3.22-3.44 0-1.93-1.57-3.5-3.5-3.5h-4.41c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5h3.451V6h-3.451c-3.31 0-6 2.69-6 6s2.69 6 6 6h.5c.414 0 .75.336.75.75s-.336.75-.75.75h-.5c-4.42 0-8.005-3.58-8.005-8z"></path></g></svg>';
-                htmlString +=       '<span>' + randomReplies + '</span>';
-                htmlString +=     '</div>';
-                htmlString +=     '<div class="action-icon" title="リツイート">';
-                htmlString +=       '<svg viewBox="0 0 24 24"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V10c0-1.1-.896-2-2-2H11v2h5.5c.276 0 .5.22.5.5v.19l-1.127-.01c-1.082-.01-2.091.46-2.771 1.26l-3.37 3.93.89.76 3.37-3.93c.48-.56 1.16-.88 1.88-.88l1.13.01V10c0-.28-.224-.5-.5-.5z"></path></g></svg>';
-                htmlString +=       '<span>' + randomRetweets + '</span>';
-                htmlString +=     '</div>';
-                htmlString +=     '<div class="action-icon" title="いいね">';
-                htmlString +=       '<svg viewBox="0 0 24 24"><g><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.223c-2.07 0-3.903 1.988-3.903 4.255 0 5.74 6.036 11.52 8.55 11.52.24 0 8.55-5.78 8.55-11.52 0-2.267-1.833-4.255-3.903-4.255-1.522 0-2.923 1.17-3.464 2.107-.54 1.05-.54 2.33 0 3.38.54 1.05 1.942 2.107 3.464 2.107v-2.014c-1.13 0-2.13-.53-2.68-1.34-.55-.81-.55-1.83 0-2.64.55-.81 1.55-1.34 2.68-1.34v-2.015c-2.14 0-3.56 1.4-4.06 2.47-.5 1.07-.5 2.31 0 3.38.5 1.07 1.92 2.47 4.06 2.47v2.014c-1.522 0-2.923-1.17-3.464-2.107-.54-1.05-.54-2.33 0-3.38-.54-1.05-1.942-2.107-3.464-2.107z"></path></g></svg>';
-                htmlString +=       '<span>' + randomLikes + '</span>';
-                htmlString +=     '</div>';
-                htmlString +=   '</div>';
-                htmlString += '</div>';
+                var content = document.createElement('div');
+                content.className = 'tweet-content';
 
-                tweetElement.innerHTML = htmlString;
-                commentsArea.appendChild(tweetElement);
+                var header = document.createElement('div');
+                header.className = 'tweet-header';
+                
+                var username = document.createElement('span');
+                username.className = 'username';
+                username.textContent = commentData.username;
+                header.appendChild(username);
+                
+                var screenName = document.createElement('span');
+                screenName.className = 'screen-name';
+                screenName.textContent = commentData.screen_name;
+                header.appendChild(screenName);
+
+                var timestamp = document.createElement('span');
+                timestamp.className = 'timestamp';
+                timestamp.textContent = '· ' + (index + 1) + '分前';
+                header.appendChild(timestamp);
+
+                var body = document.createElement('div');
+                body.className = 'tweet-body';
+                body.textContent = commentData.comment;
+
+                var actions = document.createElement('div');
+                actions.className = 'tweet-actions';
+                actions.appendChild(createActionIcon('reply', Math.floor(Math.random() * 10)));
+                actions.appendChild(createActionIcon('retweet', Math.floor(Math.random() * 50)));
+                actions.appendChild(createActionIcon('like', Math.floor(Math.random() * 200)));
+                actions.appendChild(createActionIcon('bookmark', null));
+                actions.appendChild(createActionIcon('share', null));
+
+                content.appendChild(header);
+                content.appendChild(body);
+                content.appendChild(actions);
+                tweet.appendChild(content);
+                commentsArea.appendChild(tweet);
             });
+        }
+        
+        function setupInitialUI() {
+            mainPostActions.innerHTML = ''; // クリア
+            mainPostActions.appendChild(createActionIcon('reply', '0'));
+            mainPostActions.appendChild(createActionIcon('retweet', '0'));
+            mainPostActions.appendChild(createActionIcon('like', '0'));
+            mainPostActions.appendChild(createActionIcon('bookmark', null));
+            mainPostActions.appendChild(createActionIcon('share', null));
         }
 
         // --- イベントハンドラ ---
 
         function handleFileSelect(event) {
             var file = event.target.files[0];
-            if (file) {
-                processFile(file);
-            }
+            if (file) processFile(file);
         }
 
         function handlePaste(event) {
@@ -424,7 +437,6 @@
         function handleGenerateClick() {
             loader.style.display = 'block';
             commentsArea.innerHTML = '';
-            replyCountSpan.textContent = '0';
             generateButton.disabled = true;
 
             callGeminiApi(API_KEY, uploadedImageBase64, uploadedImageType)
@@ -434,7 +446,7 @@
                 .catch(function(error) {
                     console.error('API Error:', error);
                     alert('エラーが発生しました。コンソールで詳細を確認してください。\n' + error.message);
-                    commentsArea.innerHTML = '<p style="padding: 16px; color: #f4212e;">エラー: ' + escapeHtml(error.message) + '</p>';
+                    commentsArea.innerHTML = '<p style="padding: 16px; color: #f4212e;">エラー: ' + error.message + '</p>';
                 })
                 .finally(function() {
                     loader.style.display = 'none';
@@ -446,7 +458,10 @@
         imageUpload.addEventListener('change', handleFileSelect);
         window.addEventListener('paste', handlePaste);
         generateButton.addEventListener('click', handleGenerateClick);
-        document.addEventListener('DOMContentLoaded', updateButtonState);
+        document.addEventListener('DOMContentLoaded', function() {
+            setupInitialUI();
+            updateButtonState();
+        });
     </script>
 </body>
 </html>
