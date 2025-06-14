@@ -254,39 +254,30 @@
                 var targets = text.split('\n').map(function(t) { return t.trim(); }).filter(function(t) { return t !== ''; });
                 targetCheckboxesContainer.innerHTML = '';
                 targets.forEach(function(target) {
-                    var label = document.createElement('label');
-                    label.className = 'checkbox-label';
-                    var input = document.createElement('input');
-                    input.type = 'checkbox';
-                    input.className = 'target-checkbox';
-                    input.value = target;
-                    var customCheckbox = document.createElement('span');
-                    customCheckbox.className = 'checkbox-custom';
-                    var checkmark = document.createElement('span');
-                    checkmark.className = 'checkmark';
+                    var label = document.createElement('label'); label.className = 'checkbox-label';
+                    var input = document.createElement('input'); input.type = 'checkbox'; input.className = 'target-checkbox'; input.value = target;
+                    var customCheckbox = document.createElement('span'); customCheckbox.className = 'checkbox-custom';
+                    var checkmark = document.createElement('span'); checkmark.className = 'checkmark';
                     customCheckbox.appendChild(checkmark);
-                    label.appendChild(input);
-                    label.appendChild(customCheckbox);
-                    label.appendChild(document.createTextNode(' ' + target));
+                    label.appendChild(input); label.appendChild(customCheckbox); label.appendChild(document.createTextNode(' ' + target));
                     targetCheckboxesContainer.appendChild(label);
                 });
             }).catch(function(error){ console.error(error); });
         }
-
+        
+        // ★★★ プレースホルダーに渡すテキストの生成ロジックを修正 ★★★
         function callGeminiApi(apiKey, imageBase64, imageType, member, targets, words, sendImage, template) {
             var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
             var imageInfoText = sendImage ? "これから提供する画像について、以下の情報を踏まえてください。" : "画像は提供されません。以下の情報から架空の画像を想像してください。";
             var memberText = "被写体はNiziUのメンバー、「" + (member === '指定なし' ? 'いずれかのメンバー' : member) + "」です。";
-            var targetsText = "";
-            if (targets && targets.length > 0) {
-                targetsText += "特に、以下の要素に注目してください。\n- " + targets.join('\n- ') + "\n";
-            }
-            var wordText = "";
-            if (words && words.length > 0) {
-                wordText += "以下の【推奨単語リスト】の単語を、生成するコメントに自然に、かつ効果的に盛り込むことを検討してください。これらの単語はコメントのトーンを調整するためのヒントです。\n【推奨単語リスト】\n" + words.join(', ') + "\n\n";
-            }
+            var targetsText = (targets && targets.length > 0) ? targets.join(', ') : '指定なし';
+            var wordText = (words && words.length > 0) ? words.join(', ') : '指定なし';
             
-            var finalPrompt = template.replace('{{IMAGE_INFO}}', imageInfoText).replace('{{MEMBER_TEXT}}', memberText).replace('{{TARGETS_TEXT}}', targetsText).replace('{{WORD_TEXT}}', wordText);
+            var finalPrompt = template
+                .replace('{{IMAGE_INFO}}', imageInfoText)
+                .replace('{{MEMBER_TEXT}}', memberText)
+                .replace('{{TARGETS_TEXT}}', targetsText)
+                .replace('{{WORD_TEXT}}', wordText);
             
             var body = { "contents": [{ "parts": [] }] };
             body.contents[0].parts.push({ "text": finalPrompt });
@@ -311,10 +302,7 @@
         
         function displayComments(comments) {
             commentsArea.innerHTML = '';
-            var header = document.createElement('div');
-            header.className = 'comments-header';
-            header.textContent = '返信';
-            commentsArea.appendChild(header);
+            var header = document.createElement('div'); header.className = 'comments-header'; header.textContent = '返信'; commentsArea.appendChild(header);
             var replyCountSpan = document.getElementById('reply-count');
             if (replyCountSpan) { replyCountSpan.textContent = comments.length; }
             comments.forEach(function(commentData, index) {
@@ -327,11 +315,7 @@
                 var timestamp = document.createElement('span'); timestamp.className = 'timestamp'; timestamp.textContent = '· ' + (index + 1) + '分前'; headerEl.appendChild(timestamp);
                 var body = document.createElement('div'); body.className = 'tweet-body'; body.textContent = commentData.comment;
                 var actions = document.createElement('div'); actions.className = 'tweet-actions';
-                actions.appendChild(createActionIcon('reply', Math.floor(Math.random() * 10)));
-                actions.appendChild(createActionIcon('retweet', Math.floor(Math.random() * 50)));
-                actions.appendChild(createActionIcon('like', Math.floor(Math.random() * 200)));
-                actions.appendChild(createActionIcon('bookmark', null));
-                actions.appendChild(createActionIcon('share', null));
+                actions.appendChild(createActionIcon('reply', Math.floor(Math.random() * 10))); actions.appendChild(createActionIcon('retweet', Math.floor(Math.random() * 50))); actions.appendChild(createActionIcon('like', Math.floor(Math.random() * 200))); actions.appendChild(createActionIcon('bookmark', null)); actions.appendChild(createActionIcon('share', null));
                 content.appendChild(headerEl); content.appendChild(body); content.appendChild(actions);
                 tweet.appendChild(content); commentsArea.appendChild(tweet);
             });
