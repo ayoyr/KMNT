@@ -19,8 +19,15 @@
         .container { width: 100%; max-width: 600px; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); min-height: 100vh; }
         
         /* --- 投稿ボックス --- */
-        .post-composition-box { padding: 4px 16px 8px 16px; border-bottom: 1px solid var(--border-color); display: flex; gap: 12px; }
-        .post-composition-box .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background-color: #333639; margin-top: 4px;}
+        .post-composition-box {
+            padding: 4px 16px 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            /* ★★★ 修正箇所 ★★★ */
+            align-items: flex-start;
+        }
+        .post-composition-box .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background-color: #333639; margin-top: 4px; flex-shrink: 0; }
         .post-composition-box .content { width: 100%; }
         .post-composition-box textarea { width: 100%; background: none; border: none; color: var(--text-color); font-size: 20px; resize: none; padding: 12px 0; outline: none; }
         .post-composition-box textarea::placeholder { color: var(--placeholder-color); }
@@ -41,9 +48,16 @@
         /* --- タイムライン --- */
         .timeline-header { padding: 16px; font-size: 20px; font-weight: bold; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 10; }
         .thread-container { border-bottom: 8px solid var(--border-color); }
-        .tweet { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        .tweet {
+            display: flex;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            /* ★★★ 修正箇所 ★★★ */
+            align-items: flex-start;
+        }
         .thread-container .tweet:last-child { border-bottom: none; }
         .tweet:hover { background-color: rgba(255, 255, 255, 0.03); }
+        .avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; object-fit: cover; background-color: #333639; }
         .tweet-content { width: 100%; }
         .tweet-header { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .username { font-weight: bold; font-size: 15px; }
@@ -106,11 +120,9 @@
         <div id="options-modal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button id="modal-close-button" class="icon-button" style="padding:0;">
-                        <svg viewBox="0 0 24 24" style="width:24px; height:24px;"><g><path d="M10.59 12L4.54 5.96l1.42-1.42L12 10.59l6.04-6.05 1.42 1.42L13.41 12l6.05 6.04-1.42 1.42L12 13.41l-6.04 6.05-1.42-1.42L10.59 12z"></path></g></svg>
-                    </button>
+                    <button id="modal-close-button" class="icon-button" style="padding:0;"><svg viewBox="0 0 24 24" style="width:24px; height:24px;"><g><path d="M10.59 12L4.54 5.96l1.42-1.42L12 10.59l6.04-6.05 1.42 1.42L13.41 12l6.05 6.04-1.42 1.42L12 13.41l-6.04 6.05-1.42-1.42L10.59 12z"></path></g></svg></button>
                     <h2 class="modal-title">投稿オプション</h2>
-                    <div></div> <!-- for spacing -->
+                    <div></div>
                 </div>
                 <div class="modal-body">
                     <div class="input-group">
@@ -120,6 +132,9 @@
                     <div class="input-group">
                         <span class="input-group-label">コメントする対象を選択 (複数可)</span>
                         <div id="target-checkboxes"></div>
+                    </div>
+                    <div class="input-group">
+                        <label class="checkbox-label"><input type="checkbox" id="send-image-toggle" checked><span class="checkbox-custom"><span class="checkmark"></span></span>画像をAIに送信する</label>
                     </div>
                 </div>
             </div>
@@ -133,6 +148,7 @@
         var imageDescInput = document.getElementById('image-description-input');
         var memberSelect = document.getElementById('member-select-modal');
         var targetCheckboxesContainer = document.getElementById('target-checkboxes');
+        var sendImageToggle = document.getElementById('send-image-toggle');
         var postButton = document.getElementById('post-button');
         var timeline = document.getElementById('timeline');
         var imagePreviewContainer = document.getElementById('post-image-preview-container');
@@ -151,7 +167,7 @@
             var textEntered = postTextarea.value.trim() !== '';
             var imageAttached = uploadedImageBase64 !== null;
             var descEntered = imageDescInput.value.trim() !== '';
-            postButton.disabled = !(textEntered && (imageAttached || descEntered));
+            postButton.disabled = !((API_KEY && API_KEY !== "ここにあなたのAPIキーを貼り付けてください") && textEntered && (imageAttached || descEntered));
         }
 
         function processImageFile(file) {
@@ -159,30 +175,15 @@
             var reader = new FileReader();
             reader.onload = function(e) {
                 imagePreviewContainer.innerHTML = '';
-                var img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'post-image-preview';
-                var removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-image-button';
-                removeBtn.innerHTML = '×';
+                var img = document.createElement('img'); img.src = e.target.result; img.className = 'post-image-preview';
+                var removeBtn = document.createElement('button'); removeBtn.className = 'remove-image-button'; removeBtn.innerHTML = '×';
                 removeBtn.onclick = function() {
-                    imagePreviewContainer.innerHTML = '';
-                    imagePreviewContainer.style.display = 'none';
-                    imageUploadBtn.value = '';
-                    uploadedImageBase64 = null;
-                    uploadedImageType = null;
-                    imageDescInput.disabled = false;
-                    updatePostButtonState();
+                    imagePreviewContainer.innerHTML = ''; imagePreviewContainer.style.display = 'none'; imageUploadBtn.value = '';
+                    uploadedImageBase64 = null; uploadedImageType = null; imageDescInput.disabled = false; updatePostButtonState();
                 };
-                imagePreviewContainer.appendChild(img);
-                imagePreviewContainer.appendChild(removeBtn);
-                imagePreviewContainer.style.display = 'block';
-                
-                uploadedImageBase64 = e.target.result.split(',')[1];
-                uploadedImageType = file.type;
-                imageDescInput.value = '';
-                imageDescInput.disabled = true;
-                updatePostButtonState();
+                imagePreviewContainer.appendChild(img); imagePreviewContainer.appendChild(removeBtn); imagePreviewContainer.style.display = 'block';
+                uploadedImageBase64 = e.target.result.split(',')[1]; uploadedImageType = file.type;
+                imageDescInput.value = ''; imageDescInput.disabled = true; updatePostButtonState();
             };
             reader.readAsDataURL(file);
         }
@@ -198,13 +199,15 @@
         function callGeminiApi(apiKey, data) {
             var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
             var imageInfoText = data.sendImage ? "提供された画像の情報: " + (data.imageDesc || "添付画像を参照") : "画像は提供されていません。以下の情報から架空の画像を想像してください: " + (data.imageDesc || "詳細不明");
+            var memberName = data.member === '指定なし' ? 'いずれかのメンバー' : data.member;
             var targetsText = (data.targets && data.targets.length > 0) ? data.targets.join(', ') : '指定なし';
             var wordText = (data.words && data.words.length > 0) ? data.words.join(', ') : '指定なし';
             
             var finalPrompt = data.template
                 .replace('{{USER_POST_TEXT}}', data.postText)
                 .replace('{{IMAGE_INFO}}', imageInfoText)
-                .replace('{{MEMBER_TEXT}}', "被写体はNiziUのメンバー、「" + (data.member === '指定なし' ? 'いずれかのメンバー' : data.member) + "」です。")
+                .replace('{{MEMBER_NAME}}', memberName)
+                .replace('{{MEMBER_TEXT}}', "被写体はNiziUのメンバー、「" + memberName + "」です。") // 後方互換性のため残す
                 .replace('{{TARGETS_TEXT}}', targetsText)
                 .replace('{{WORD_TEXT}}', wordText);
             
@@ -245,9 +248,10 @@
                 content.appendChild(imgContainer);
             }
             var actions = document.createElement('div'); actions.className = 'tweet-actions';
-            actions.appendChild(createActionIcon('reply', data.replyCount)); actions.appendChild(createActionIcon('retweet', data.retweetCount)); actions.appendChild(createActionIcon('like', data.likeCount)); actions.appendChild(createActionIcon('bookmark', null)); actions.appendChild(createActionIcon('share', null));
-            content.appendChild(actions);
-            tweet.appendChild(content);
+            var replyIcon = createActionIcon('reply', data.replyCount);
+            if (data.isMainPost) { replyIcon.id = 'main-reply-icon'; }
+            actions.appendChild(replyIcon); actions.appendChild(createActionIcon('retweet', data.retweetCount)); actions.appendChild(createActionIcon('like', data.likeCount)); actions.appendChild(createActionIcon('bookmark', null)); actions.appendChild(createActionIcon('share', null));
+            content.appendChild(actions); tweet.appendChild(content);
             return tweet;
         }
 
@@ -256,24 +260,16 @@
             postButton.disabled = true;
 
             var postData = {
-                postText: postTextarea.value.trim(),
-                member: memberSelect.value,
+                postText: postTextarea.value.trim(), member: memberSelect.value,
                 targets: Array.from(document.querySelectorAll('#target-checkboxes .target-checkbox:checked')).map(function(cb) { return cb.value; }),
-                sendImage: uploadedImageBase64 !== null,
-                imageDesc: imageDescInput.value.trim(),
-                imageBase64: uploadedImageBase64,
-                imageType: uploadedImageType,
-                words: wordList,
-                template: promptTemplate
+                sendImage: uploadedImageBase64 !== null && sendImageToggle.checked,
+                imageDesc: imageDescInput.value.trim(), imageBase64: uploadedImageBase64, imageType: uploadedImageType, words: wordList, template: promptTemplate
             };
             
-            var threadContainer = document.createElement('div');
-            threadContainer.className = 'thread-container';
-
+            var threadContainer = document.createElement('div'); threadContainer.className = 'thread-container';
             var userTweetElement = createTweetElement({
-                avatar: 'https://i.pravatar.cc/48?u=gemini-user', username: 'あなた', screenName: '@your_account', timestamp: 'たった今',
-                body: postData.postText,
-                imageUrl: uploadedImageBase64 ? 'data:' + postData.imageType + ';base64,' + postData.imageBase64 : null,
+                isMainPost: true, avatar: 'https://i.pravatar.cc/48?u=gemini-user', username: 'あなた', screenName: '@your_account', timestamp: 'たった今',
+                body: postData.postText, imageUrl: uploadedImageBase64 ? 'data:' + postData.imageType + ';base64,' + postData.imageBase64 : null,
                 replyCount: 0, retweetCount: 0, likeCount: 0
             });
             threadContainer.appendChild(userTweetElement);
@@ -282,51 +278,34 @@
             var loaderDiv = document.createElement('div'); loaderDiv.className = 'loader';
             loaderContainer.appendChild(loaderDiv);
             threadContainer.appendChild(loaderContainer);
-
             timeline.prepend(threadContainer);
             
-            // Clear inputs
-            postTextarea.value = '';
-            imagePreviewContainer.innerHTML = '';
-            imagePreviewContainer.style.display = 'none';
-            imageUploadBtn.value = '';
-            imageDescInput.value = '';
-            imageDescInput.disabled = false;
-            uploadedImageBase64 = null;
-            updatePostButtonState();
+            postTextarea.value = ''; imagePreviewContainer.innerHTML = ''; imagePreviewContainer.style.display = 'none'; imageUploadBtn.value = '';
+            imageDescInput.value = ''; imageDescInput.disabled = false; uploadedImageBase64 = null; updatePostButtonState();
 
             callGeminiApi(API_KEY, postData)
                 .then(function(comments) {
                     loaderContainer.remove();
                     var header = document.createElement('div'); header.className = 'comments-header'; header.textContent = '返信';
                     threadContainer.appendChild(header);
-                    
                     comments.forEach(function(commentData, index) {
                         var replyElement = createTweetElement({
-                            avatar: 'https://i.pravatar.cc/48?u=' + (commentData.screen_name || index),
-                            username: commentData.username, screenName: commentData.screen_name, timestamp: (index + 1) + '秒前',
-                            body: commentData.comment,
+                            avatar: 'https://i.pravatar.cc/48?u=' + (commentData.screen_name || index), username: commentData.username, screenName: commentData.screen_name, timestamp: (index + 1) + '秒前', body: commentData.comment,
                             replyCount: Math.floor(Math.random() * 10), retweetCount: Math.floor(Math.random() * 50), likeCount: Math.floor(Math.random() * 200)
                         });
                         threadContainer.appendChild(replyElement);
                     });
-                    userTweetElement.querySelector('.action-icon span').textContent = comments.length;
+                    var mainReplyIcon = document.getElementById('main-reply-icon');
+                    if (mainReplyIcon) { mainReplyIcon.querySelector('span').textContent = comments.length; }
                 })
-                .catch(function(error) {
-                    loaderContainer.innerHTML = '<p style="padding: 16px; color: #f4212e;">エラー: ' + error.message + '</p>';
-                });
+                .catch(function(error) { loaderContainer.innerHTML = '<p style="padding: 16px; color: #f4212e;">エラー: ' + error.message + '</p>'; });
         }
         
-        // --- Event Listeners Setup ---
         document.addEventListener('DOMContentLoaded', function() {
             loadInitialData();
-            postTextarea.addEventListener('input', updatePostButtonState);
-            imageDescInput.addEventListener('input', updatePostButtonState);
+            postTextarea.addEventListener('input', updatePostButtonState); imageDescInput.addEventListener('input', updatePostButtonState);
             imageUploadBtn.addEventListener('change', function(e) { var file = e.target.files[0]; if(file) processImageFile(file); });
-            window.addEventListener('paste', function(e) {
-                var items=(e.clipboardData||window.clipboardData).items;
-                for(var i=0; i<items.length; i++){ if(items[i].type.indexOf("image")!==-1){ var file=items[i].getAsFile(); processImageFile(file); e.preventDefault(); break;}}
-            });
+            window.addEventListener('paste', function(e){var items=(e.clipboardData||window.clipboardData).items;for(var i=0;i<items.length;i++){if(items[i].type.indexOf("image")!==-1){var file=items[i].getAsFile();processImageFile(file);e.preventDefault();break;}}});
             openModalBtn.addEventListener('click', function() { modal.style.display = 'flex'; });
             closeModalBtn.addEventListener('click', function() { modal.style.display = 'none'; });
             window.addEventListener('click', function(e) { if (e.target === modal) { modal.style.display = 'none'; } });
