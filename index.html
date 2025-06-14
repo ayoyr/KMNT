@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini APIデモ: X風 画像コメントシミュレーター</title>
+    <!-- favicon.icoの404エラーを防ぐための記述 -->
+    <link rel="icon" href="data:,">
     <style>
         /* X (Twitter) 風のスタイル */
         :root {
@@ -172,6 +173,7 @@
         #image-preview {
             max-width: 100%;
             display: block;
+            background-color: #202327; /* プレースホルダー背景色 */
         }
         
         .tweet-actions {
@@ -271,7 +273,8 @@
                     この写真、どう思う？🤔
                 </div>
                 <div class="tweet-image-container">
-                    <img id="image-preview" src="https://via.placeholder.com/500x300.png?text=ここに画像が表示されます" alt="アップロードされた画像">
+                    <!-- プレースホルダー画像を外部依存しないData URIに変更 -->
+                    <img id="image-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='300' viewBox='0 0 500 300'%3E%3Crect fill='%23202327' width='500' height='300'/%3E%3Ctext fill='%2371767b' font-family='sans-serif' font-size='18' dy='10.5' font-weight='bold' x='50%25' y='50%25' text-anchor='middle'%3Eここに画像が表示されます%3C/text%3E%3C/svg%3E" alt="アップロードされた画像">
                 </div>
                  <div class="tweet-actions">
                     <div class="action-icon" title="返信">
@@ -409,7 +412,7 @@
         document.addEventListener('DOMContentLoaded', updateButtonState);
 
 
-        // --- API関連と表示関連の関数 ---
+        // --- API関連と表示関連の関数 (ここを修正) ---
 
         /**
          * Gemini APIを呼び出す関数
