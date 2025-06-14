@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini APIデモ: X風 画像コメントシミュレーター</title>
     <style>
-        /* CSSは前回のものと同じなので、ここでは省略します */
+        /* X (Twitter) 風のスタイル */
         :root {
             --background-color: #000000;
             --text-color: #e7e9ea;
@@ -15,39 +16,226 @@
             --hover-overlay-blue: rgba(29, 155, 240, 0.1);
             --hover-overlay-gray: rgba(231, 233, 234, 0.1);
         }
-        body { background-color: var(--background-color); color: var(--text-color); font-family: "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 600px; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); min-height: 100vh; }
-        .settings-section { padding: 16px; border-bottom: 1px solid var(--border-color); }
-        .settings-section h1 { font-size: 20px; margin: 0 0 12px 0; }
-        .input-group { margin-bottom: 12px; }
-        .input-group label { display: block; margin-bottom: 4px; color: var(--secondary-text-color); font-size: 14px; }
-        .file-input-wrapper { display: flex; align-items: center; gap: 12px; }
-        .file-label { display: inline-block; padding: 8px 16px; background-color: var(--accent-color); color: white; border-radius: 9999px; cursor: pointer; font-weight: bold; font-size: 15px; }
-        input[type="file"] { display: none; }
-        #file-name { color: var(--secondary-text-color); font-size: 14px; }
-        .action-button { width: 100%; padding: 12px; background-color: var(--accent-color); border: none; border-radius: 9999px; color: white; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 16px; transition: background-color 0.2s; }
-        .action-button:hover { background-color: #1a8cd8; }
-        .action-button:disabled { background-color: #0e4e78; color: #8a99a4; cursor: not-allowed; }
-        .tweet { display: flex; padding: 12px 16px; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s; }
-        .tweet:hover { background-color: rgba(255, 255, 255, 0.03); }
-        .avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; object-fit: cover; background-color: #333639; }
-        .tweet-content { width: 100%; }
-        .tweet-header { display: flex; align-items: center; gap: 4px; }
-        .username { font-weight: bold; font-size: 15px; }
-        .screen-name, .timestamp { color: var(--secondary-text-color); font-size: 15px; }
-        .tweet-body { margin: 4px 0 12px 0; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
-        .tweet-image-container { margin-top: 12px; border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); }
-        #image-preview { max-width: 100%; display: block; }
-        .tweet-actions { display: flex; justify-content: space-between; margin-top: 12px; max-width: 425px; }
-        .action-icon { display: flex; align-items: center; gap: 8px; color: var(--secondary-text-color); font-size: 13px; cursor: pointer; }
-        .action-icon svg { fill: currentColor; width: 20px; height: 20px; padding: 7px; border-radius: 50%; transition: background-color 0.2s, color 0.2s; }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: "TwitterChirp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            min-height: 100vh;
+        }
+
+        /* --- 設定エリア --- */
+        .settings-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-section h1 {
+            font-size: 20px;
+            margin: 0 0 12px 0;
+        }
+        
+        .settings-section .description {
+            font-size: 14px;
+            color: var(--secondary-text-color);
+            margin-top: -8px;
+            margin-bottom: 16px;
+        }
+        
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--secondary-text-color);
+            font-size: 14px;
+        }
+
+        .file-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .file-label {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+
+        #file-name {
+            color: var(--secondary-text-color);
+            font-size: 14px;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 9999px;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .action-button:hover {
+            background-color: #1a8cd8;
+        }
+        
+        .action-button:disabled {
+            background-color: #0e4e78;
+            color: #8a99a4;
+            cursor: not-allowed;
+        }
+
+        /* --- 投稿 (Tweet) 風のスタイル --- */
+        .tweet {
+            display: flex;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        
+        .tweet:hover {
+             background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+            object-fit: cover;
+            background-color: #333639; /* プレースホルダー色 */
+        }
+        
+        .tweet-content {
+            width: 100%;
+        }
+
+        .tweet-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .username {
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .screen-name, .timestamp {
+            color: var(--secondary-text-color);
+            font-size: 15px;
+        }
+
+        .tweet-body {
+            margin: 4px 0 12px 0;
+            font-size: 15px;
+            line-height: 1.5;
+            white-space: pre-wrap; /* 改行を反映 */
+        }
+
+        .tweet-image-container {
+            margin-top: 12px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        #image-preview {
+            max-width: 100%;
+            display: block;
+        }
+        
+        .tweet-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            max-width: 425px;
+        }
+
+        .action-icon {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--secondary-text-color);
+            font-size: 13px;
+            cursor: pointer;
+        }
+        
+        .action-icon svg {
+            fill: currentColor;
+            width: 20px;
+            height: 20px;
+            padding: 7px;
+            border-radius: 50%;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
         .action-icon:hover { color: var(--accent-color); }
         .action-icon:hover svg { background-color: var(--hover-overlay-blue); }
-        .loader-container { text-align: center; padding: 40px 16px; display: none; }
-        .loader { border: 4px solid var(--border-color); border-top: 4px solid var(--accent-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #comments-area { border-top: 1px solid var(--border-color); }
-        .comments-header { padding: 12px 16px; font-size: 18px; font-weight: bold; border-bottom: 1px solid var(--border-color); }
+        
+        /* --- ローディングスピナー --- */
+        .loader-container {
+            text-align: center;
+            padding: 40px 16px;
+            display: none; /* 初期状態は非表示 */
+        }
+        
+        .loader {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- コメントエリア --- */
+        #comments-area {
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .comments-header {
+            padding: 12px 16px;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+        }
+
     </style>
 </head>
 <body>
@@ -56,11 +244,11 @@
         <!-- 設定セクション -->
         <section class="settings-section">
             <h1>X風 画像コメントシミュレーター</h1>
-            <p style="font-size: 14px; color: var(--secondary-text-color); margin-top: -8px; margin-bottom: 16px;">
-                `config.js`にAPIキーを設定してから、画像を選択してください。
+            <p class="description">
+                `config.js`にAPIキーを設定後、下のボタンから画像を選択するか、このページに直接画像を貼り付けてください (Ctrl+V / ⌘+V)。
             </p>
             <div class="input-group">
-                <label>1. 画像を選択</label>
+                <label>1. 画像を選択 または 貼り付け</label>
                 <div class="file-input-wrapper">
                     <label for="image-upload" class="file-label">ファイルを選択</label>
                     <input type="file" id="image-upload" accept="image/*">
@@ -70,7 +258,7 @@
             <button id="generate-button" class="action-button" disabled>2. AIでコメントを生成する</button>
         </section>
 
-        <!-- メイン投稿のUI (変更なし) -->
+        <!-- メイン投稿のUI -->
         <article class="tweet" id="main-post">
             <img src="https://i.pravatar.cc/48?u=gemini-user" alt="アバター" class="avatar">
             <div class="tweet-content">
@@ -90,10 +278,20 @@
                         <svg viewBox="0 0 24 24"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.031 7.11l-1.118 6.87a1.126 1.126 0 01-2.162-.32l.483-3.05 4.902.002.01-.002c1.78-.11 3.22-1.62 3.22-3.44 0-1.93-1.57-3.5-3.5-3.5h-4.41c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5h3.451V6h-3.451c-3.31 0-6 2.69-6 6s2.69 6 6 6h.5c.414 0 .75.336.75.75s-.336.75-.75.75h-.5c-4.42 0-8.005-3.58-8.005-8z"></path></g></svg>
                         <span id="reply-count">0</span>
                     </div>
-                     <div class="action-icon" title="リツイート"><svg viewBox="0 0 24 24"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V10c0-1.1-.896-2-2-2H11v2h5.5c.276 0 .5.22.5.5v.19l-1.127-.01c-1.082-.01-2.091.46-2.771 1.26l-3.37 3.93.89.76 3.37-3.93c.48-.56 1.16-.88 1.88-.88l1.13.01V10c0-.28-.224-.5-.5-.5z"></path></g></svg><span>0</span></div>
-                     <div class="action-icon" title="いいね"><svg viewBox="0 0 24 24"><g><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.223c-2.07 0-3.903 1.988-3.903 4.255 0 5.74 6.036 11.52 8.55 11.52.24 0 8.55-5.78 8.55-11.52 0-2.267-1.833-4.255-3.903-4.255-1.522 0-2.923 1.17-3.464 2.107-.54 1.05-.54 2.33 0 3.38.54 1.05 1.942 2.107 3.464 2.107v-2.014c-1.13 0-2.13-.53-2.68-1.34-.55-.81-.55-1.83 0-2.64.55-.81 1.55-1.34 2.68-1.34v-2.015c-2.14 0-3.56 1.4-4.06 2.47-.5 1.07-.5 2.31 0 3.38.5 1.07 1.92 2.47 4.06 2.47v2.014c-1.522 0-2.923-1.17-3.464-2.107-.54-1.05-.54-2.33 0-3.38-.54-1.05-1.942-2.107-3.464-2.107z"></path></g></svg><span>0</span></div>
-                    <div class="action-icon" title="ブックマーク"><svg viewBox="0 0 24 24"><g><path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"></path></g></svg></div>
-                    <div class="action-icon" title="共有"><svg viewBox="0 0 24 24"><g><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41L7.71 9.71 6.3 8.29l5.7-5.7zM20 15v4c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4H2v4c0 2.21 1.79 4 4 4h12c2.21 0 4-1.79 4-4v-4h-2z"></path></g></svg></div>
+                     <div class="action-icon" title="リツイート">
+                        <svg viewBox="0 0 24 24"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V10c0-1.1-.896-2-2-2H11v2h5.5c.276 0 .5.22.5.5v.19l-1.127-.01c-1.082-.01-2.091.46-2.771 1.26l-3.37 3.93.89.76 3.37-3.93c.48-.56 1.16-.88 1.88-.88l1.13.01V10c0-.28-.224-.5-.5-.5z"></path></g></svg>
+                        <span>0</span>
+                    </div>
+                     <div class="action-icon" title="いいね">
+                        <svg viewBox="0 0 24 24"><g><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.223c-2.07 0-3.903 1.988-3.903 4.255 0 5.74 6.036 11.52 8.55 11.52.24 0 8.55-5.78 8.55-11.52 0-2.267-1.833-4.255-3.903-4.255-1.522 0-2.923 1.17-3.464 2.107-.54 1.05-.54 2.33 0 3.38.54 1.05 1.942 2.107 3.464 2.107v-2.014c-1.13 0-2.13-.53-2.68-1.34-.55-.81-.55-1.83 0-2.64.55-.81 1.55-1.34 2.68-1.34v-2.015c-2.14 0-3.56 1.4-4.06 2.47-.5 1.07-.5 2.31 0 3.38.5 1.07 1.92 2.47 4.06 2.47v2.014c-1.522 0-2.923-1.17-3.464-2.107-.54-1.05-.54-2.33 0-3.38-.54-1.05-1.942-2.107-3.464-2.107z"></path></g></svg>
+                        <span>0</span>
+                    </div>
+                    <div class="action-icon" title="ブックマーク">
+                        <svg viewBox="0 0 24 24"><g><path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"></path></g></svg>
+                    </div>
+                    <div class="action-icon" title="共有">
+                        <svg viewBox="0 0 24 24"><g><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41L7.71 9.71 6.3 8.29l5.7-5.7zM20 15v4c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-4H2v4c0 2.21 1.79 4 4 4h12c2.21 0 4-1.79 4-4v-4h-2z"></path></g></svg>
+                    </div>
                 </div>
             </div>
         </article>
@@ -114,7 +312,6 @@
     <!-- 次にメインのスクリプトを実行する -->
     <script>
         // DOM要素の取得
-        // const apiKeyInput = document.getElementById('api-key'); // 削除
         const imageUpload = document.getElementById('image-upload');
         const fileNameSpan = document.getElementById('file-name');
         const generateButton = document.getElementById('generate-button');
@@ -128,36 +325,65 @@
 
         // APIキーと画像の選択状態をチェックしてボタンを有効化/無効化
         function updateButtonState() {
-            // API_KEYがconfig.jsから読み込まれ、かつ画像が選択されているかチェック
             if (typeof API_KEY !== 'undefined' && API_KEY && API_KEY !== "ここにあなたのAPIキーを貼り付けてください" && uploadedImageBase64) {
                 generateButton.disabled = false;
             } else {
                 generateButton.disabled = true;
             }
         }
+        
+        /**
+         * ファイルオブジェクトを処理する共通関数
+         * (ファイル選択とペーストの両方から呼び出される)
+         * @param {File} file - 処理する画像ファイル
+         */
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                return;
+            }
+            
+            // ファイル名を表示 (ペーストされた場合は現在時刻で仮の名前を付ける)
+            fileNameSpan.textContent = file.name || `クリップボードの画像 (${new Date().toLocaleTimeString()})`;
+            
+            // 画像をプレビューに表示し、Base64に変換
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                uploadedImageBase64 = e.target.result.split(',')[1];
+                uploadedImageType = file.type;
+                updateButtonState(); // 画像が設定されたらボタンの状態を更新
+            };
+            reader.readAsDataURL(file);
+        }
 
-        // 画像アップロード時のイベント
+        // --- イベントリスナーの設定 ---
+
+        // 1. ファイル選択ボタンのイベント
         imageUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
-                fileNameSpan.textContent = file.name;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    imagePreview.src = e.target.result;
-                    uploadedImageBase64 = e.target.result.split(',')[1];
-                    uploadedImageType = file.type;
-                    updateButtonState(); // 画像が設定されたらボタンの状態を更新
-                };
-                reader.readAsDataURL(file);
+                handleFile(file);
             }
         });
 
-        // 生成ボタンクリック時のイベント
+        // 2. クリップボードからのペーストイベント
+        window.addEventListener('paste', (event) => {
+            const items = (event.clipboardData || window.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+                    const file = items[i].getAsFile();
+                    handleFile(file);
+                    event.preventDefault(); // デフォルトのペースト動作をキャンセル
+                    break; // 最初の画像ファイルだけを処理
+                }
+            }
+        });
+
+        // 3. 生成ボタンクリック時のイベント
         generateButton.addEventListener('click', async () => {
-            // config.jsからAPI_KEY定数を直接使用
             const apiKey = API_KEY;
             if (!apiKey || apiKey === "ここにあなたのAPIキーを貼り付けてください" || !uploadedImageBase64) {
-                alert('config.jsに有効なAPIキーを設定し、画像を選択してください。');
+                alert('config.jsに有効なAPIキーを設定し、画像を選択または貼り付けてください。');
                 return;
             }
 
@@ -167,7 +393,6 @@
             generateButton.disabled = true;
             
             try {
-                // Gemini APIへのリクエスト (この関数は変更なし)
                 const response = await callGeminiApi(apiKey, uploadedImageBase64, uploadedImageType);
                 displayComments(response);
             } catch (error) {
@@ -179,37 +404,140 @@
                 updateButtonState();
             }
         });
-
-        // callGeminiApi, displayComments, escapeHtml の各関数は前回のものと同じなので、
-        // ここでは省略します。実際のコードにはこれらの関数を含めてください。
         
+        // ページ読み込み完了時にボタンの状態を初期チェック
+        document.addEventListener('DOMContentLoaded', updateButtonState);
+
+
+        // --- API関連と表示関連の関数 ---
+
+        /**
+         * Gemini APIを呼び出す関数
+         * @param {string} apiKey - Google AI APIキー
+         * @param {string} imageBase64 - Base64エンコードされた画像データ
+         * @param {string} imageType - 画像のMIMEタイプ (e.g., 'image/jpeg')
+         * @returns {Promise<Array>} - コメントオブジェクトの配列
+         */
         async function callGeminiApi(apiKey, imageBase64, imageType) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${apiKey}`;
-            const prompt = `あなたは人気のソーシャルメディアコンサルタントです。\nこの画像に対するX（旧Twitter）でのリアルなリプライを、JSON配列形式で20個生成してください。\n\n制約条件:\n- 各要素は \`username\` (日本語のリアルな名前), \`screen_name\` (@から始まる英数字のID), \`comment\` (絵文字を適度に含んだ140字以内のコメント) の3つのキーを持つオブジェクトとします。\n- コメントの内容は、称賛、ユーモア、質問、少し批判的な意見、共感など、多様な視点を含めてください。\n- 人間の自然な反応をシミュレートしてください。\n- 出力はJSON配列のみとし、前後に余計なテキストは含めないでください。\n\n例:\n[\n  {"username": "山田 花子", "screen_name": "@yamada_hanako", "comment": "わー！すごく綺麗な写真ですね！✨どこの風景ですか？"},\n  {"username": "猫好きゲーマー", "screen_name": "@cat_game_lover", "comment": "この構図、天才すぎる…真似したいけど無理だろうな😂"}\n]`;
-            const body = {"contents": [{"parts": [{ "text": prompt }, { "inline_data": { "mime_type": imageType, "data": imageBase64 } }] }] };
-            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-            if (!response.ok) { const errorData = await response.json(); throw new Error(`APIリクエストに失敗しました: ${errorData.error.message}`); }
+            const prompt = `あなたは人気のソーシャルメディアコンサルタントです。
+この画像に対するX（旧Twitter）でのリアルなリプライを、JSON配列形式で20個生成してください。
+
+制約条件:
+- 各要素は \`username\` (日本語のリアルな名前), \`screen_name\` (@から始まる英数字のID), \`comment\` (絵文字を適度に含んだ140字以内のコメント) の3つのキーを持つオブジェクトとします。
+- コメントの内容は、称賛、ユーモア、質問、少し批判的な意見、共感など、多様な視点を含めてください。
+- 人間の自然な反応をシミュレートしてください。
+- 出力はJSON配列のみとし、前後に余計なテキストは含めないでください。
+
+例:
+[
+  {"username": "山田 花子", "screen_name": "@yamada_hanako", "comment": "わー！すごく綺麗な写真ですね！✨どこの風景ですか？"},
+  {"username": "猫好きゲーマー", "screen_name": "@cat_game_lover", "comment": "この構図、天才すぎる…真似したいけど無理だろうな😂"}
+]
+`;
+            const body = {
+                "contents": [
+                    {
+                        "parts": [
+                            { "text": prompt },
+                            {
+                                "inline_data": {
+                                    "mime_type": imageType,
+                                    "data": imageBase64
+                                }
+                            }
+                        ]
+                    }
+                ]
+            };
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`APIリクエストに失敗しました: ${errorData.error.message}`);
+            }
+
             const data = await response.json();
+            
             const textResponse = data.candidates[0].content.parts[0].text;
-            const jsonString = textResponse.replace(/^```json\s*|```\s*$/g, '');
+            // MarkdownのJSONブロック(` ```json `と` ``` `)を堅牢に削除
+            const jsonString = textResponse.replace(/^```(json)?\s*|```\s*$/g, '');
             return JSON.parse(jsonString);
         }
+
+        /**
+         * APIから取得したコメントを画面に表示する関数
+         * @param {Array} comments - コメントオブジェクトの配列
+         */
         function displayComments(comments) {
-            if (!Array.isArray(comments)) { console.error("APIのレスポンスが配列ではありません:", comments); throw new Error("APIから予期しない形式のデータが返されました。"); }
+            if (!Array.isArray(comments)) {
+                console.error("APIのレスポンスが配列ではありません:", comments);
+                throw new Error("APIから予期しない形式のデータが返されました。");
+            }
+            
             replyCountSpan.textContent = comments.length;
-            const header = document.createElement('div'); header.className = 'comments-header'; header.textContent = '返信'; commentsArea.appendChild(header);
+            
+            const header = document.createElement('div');
+            header.className = 'comments-header';
+            header.textContent = '返信';
+            commentsArea.appendChild(header);
+
             comments.forEach((comment, index) => {
-                const tweetElement = document.createElement('article'); tweetElement.className = 'tweet';
+                const tweetElement = document.createElement('article');
+                tweetElement.className = 'tweet';
+                
                 const avatarUrl = `https://i.pravatar.cc/48?u=${comment.screen_name || index}`;
-                tweetElement.innerHTML = `<img src="${avatarUrl}" alt="アバター" class="avatar"><div class="tweet-content"><div class="tweet-header"><span class="username">${escapeHtml(comment.username)}</span><span class="screen-name">${escapeHtml(comment.screen_name)}</span><span class="timestamp">· ${index + 1}分前</span></div><div class="tweet-body">${escapeHtml(comment.comment)}</div><div class="tweet-actions"><div class="action-icon" title="返信"><svg viewBox="0 0 24 24"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.031 7.11l-1.118 6.87a1.126 1.126 0 01-2.162-.32l.483-3.05 4.902.002.01-.002c1.78-.11 3.22-1.62 3.22-3.44 0-1.93-1.57-3.5-3.5-3.5h-4.41c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5h3.451V6h-3.451c-3.31 0-6 2.69-6 6s2.69 6 6 6h.5c.414 0 .75.336.75.75s-.336.75-.75.75h-.5c-4.42 0-8.005-3.58-8.005-8z"></path></g></svg><span>${Math.floor(Math.random() * 10)}</span></div><div class="action-icon" title="リツイート"><svg viewBox="0 0 24 24"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V10c0-1.1-.896-2-2-2H11v2h5.5c.276 0 .5.22.5.5v.19l-1.127-.01c-1.082-.01-2.091.46-2.771 1.26l-3.37 3.93.89.76 3.37-3.93c.48-.56 1.16-.88 1.88-.88l1.13.01V10c0-.28-.224-.5-.5-.5z"></path></g></svg><span>${Math.floor(Math.random() * 50)}</span></div><div class="action-icon" title="いいね"><svg viewBox="0 0 24 24"><g><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.223c-2.07 0-3.903 1.988-3.903 4.255 0 5.74 6.036 11.52 8.55 11.52.24 0 8.55-5.78 8.55-11.52 0-2.267-1.833-4.255-3.903-4.255-1.522 0-2.923 1.17-3.464 2.107-.54 1.05-.54 2.33 0 3.38.54 1.05 1.942 2.107 3.464 2.107v-2.014c-1.13 0-2.13-.53-2.68-1.34-.55-.81-.55-1.83 0-2.64.55-.81 1.55-1.34 2.68-1.34v-2.015c-2.14 0-3.56 1.4-4.06 2.47-.5 1.07-.5 2.31 0 3.38.5 1.07 1.92 2.47 4.06 2.47v2.014c-1.522 0-2.923-1.17-3.464-2.107-.54-1.05-.54-2.33 0-3.38-.54-1.05-1.942-2.107-3.464-2.107z"></path></g></svg><span>${Math.floor(Math.random() * 200)}</span></div></div></div>`;
+
+                tweetElement.innerHTML = `
+                    <img src="${avatarUrl}" alt="アバター" class="avatar">
+                    <div class="tweet-content">
+                        <div class="tweet-header">
+                            <span class="username">${escapeHtml(comment.username)}</span>
+                            <span class="screen-name">${escapeHtml(comment.screen_name)}</span>
+                            <span class="timestamp">· ${index + 1}分前</span>
+                        </div>
+                        <div class="tweet-body">
+                            ${escapeHtml(comment.comment)}
+                        </div>
+                        <div class="tweet-actions">
+                            <div class="action-icon" title="返信">
+                                <svg viewBox="0 0 24 24"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.031 7.11l-1.118 6.87a1.126 1.126 0 01-2.162-.32l.483-3.05 4.902.002.01-.002c1.78-.11 3.22-1.62 3.22-3.44 0-1.93-1.57-3.5-3.5-3.5h-4.41c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5h3.451V6h-3.451c-3.31 0-6 2.69-6 6s2.69 6 6 6h.5c.414 0 .75.336.75.75s-.336.75-.75.75h-.5c-4.42 0-8.005-3.58-8.005-8z"></path></g></svg>
+                                <span>${Math.floor(Math.random() * 10)}</span>
+                            </div>
+                            <div class="action-icon" title="リツイート">
+                                <svg viewBox="0 0 24 24"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V10c0-1.1-.896-2-2-2H11v2h5.5c.276 0 .5.22.5.5v.19l-1.127-.01c-1.082-.01-2.091.46-2.771 1.26l-3.37 3.93.89.76 3.37-3.93c.48-.56 1.16-.88 1.88-.88l1.13.01V10c0-.28-.224-.5-.5-.5z"></path></g></svg>
+                                <span>${Math.floor(Math.random() * 50)}</span>
+                            </div>
+                            <div class="action-icon" title="いいね">
+                                <svg viewBox="0 0 24 24"><g><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.223c-2.07 0-3.903 1.988-3.903 4.255 0 5.74 6.036 11.52 8.55 11.52.24 0 8.55-5.78 8.55-11.52 0-2.267-1.833-4.255-3.903-4.255-1.522 0-2.923 1.17-3.464 2.107-.54 1.05-.54 2.33 0 3.38.54 1.05 1.942 2.107 3.464 2.107v-2.014c-1.13 0-2.13-.53-2.68-1.34-.55-.81-.55-1.83 0-2.64.55-.81 1.55-1.34 2.68-1.34v-2.015c-2.14 0-3.56 1.4-4.06 2.47-.5 1.07-.5 2.31 0 3.38.5 1.07 1.92 2.47 4.06 2.47v2.014c-1.522 0-2.923-1.17-3.464-2.107-.54-1.05-.54-2.33 0-3.38-.54-1.05-1.942-2.107-3.464-2.107z"></path></g></svg>
+                                <span>${Math.floor(Math.random() * 200)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 commentsArea.appendChild(tweetElement);
             });
         }
-        function escapeHtml(unsafe) { return unsafe.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, """).replace(/'/g, "'"); }
-
-        // ページ読み込み時に一度ボタンの状態をチェック
-        document.addEventListener('DOMContentLoaded', updateButtonState);
-
+        
+        /**
+         * HTMLエスケープ関数 (簡易的なXSS対策)
+         * @param {string} unsafe - エスケープする文字列
+         * @returns {string} - エスケープされた文字列
+         */
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return '';
+            return unsafe
+                 .replace(/&/g, "&")
+                 .replace(/</g, "<")
+                 .replace(/>/g, ">")
+                 .replace(/"/g, """)
+                 .replace(/'/g, "'");
+        }
     </script>
 </body>
 </html>
