@@ -152,7 +152,7 @@
         <section class="settings-section">
             <h1>X風 画像コメントシミュレーター</h1>
             <p class="description">
-                `config.js`にAPIキーを設定し、`words.csv`を配置してください。
+                `config.js`にAPIキーを設定し、`words.csv`, `prompt.txt`を配置してください。
             </p>
             <div class="input-group">
                 <label>1. 画像を選択 または 貼り付け</label>
@@ -223,6 +223,7 @@
         var uploadedImageBase64 = null;
         var uploadedImageType = null;
         var wordList = [];
+        var promptTemplate = ''; // プロンプトテンプレートを格納する変数
 
         var SVG_PATHS = {
             reply: "M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.031 7.11l-1.118 6.87a1.126 1.126 0 01-2.162-.32l.483-3.05 4.902.002.01-.002c1.78-.11 3.22-1.62 3.22-3.44 0-1.93-1.57-3.5-3.5-3.5h-4.41c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5h3.451V6h-3.451c-3.31 0-6 2.69-6 6s2.69 6 6 6h.5c.414 0 .75.336.75.75s-.336.75-.75.75h-.5c-4.42 0-8.005-3.58-8.005-8z",
@@ -253,25 +254,29 @@
         function loadWordsCsv() {
             fetch('words.csv')
                 .then(function(response) {
-                    if (!response.ok) {
-                        console.error('words.csvの読み込みに失敗しました。');
-                        return '';
-                    }
+                    if (!response.ok) { console.error('words.csvの読み込みに失敗しました。'); return ''; }
                     return response.text();
                 })
                 .then(function(text) {
-                    wordList = text.split('\n').map(function(word) {
-                        return word.trim();
-                    }).filter(function(word) {
-                        return word !== '';
-                    });
+                    wordList = text.split('\n').map(function(w) { return w.trim(); }).filter(function(w) { return w !== ''; });
                 })
-                .catch(function(error) {
-                    console.error('Fetch Error:', error);
-                });
+                .catch(function(error) { console.error('words.csv読み込みエラー:', error); });
         }
 
-        function callGeminiApi(apiKey, imageBase64, imageType, member, words) {
+        // ★★★ プロンプトファイルを読み込む関数を追加 ★★★
+        function loadPrompt() {
+            fetch('prompt.txt')
+                .then(function(response) {
+                    if (!response.ok) { console.error('prompt.txtの読み込みに失敗しました。'); return ''; }
+                    return response.text();
+                })
+                .then(function(text) {
+                    promptTemplate = text;
+                })
+                .catch(function(error) { console.error('prompt.txt読み込みエラー:', error); });
+        }
+
+        function callGeminiApi(apiKey, imageBase64, imageType, member, words, template) {
             var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
             
             var memberText = "この画像はNiziUのメンバーの画像です。";
@@ -286,21 +291,12 @@
                 wordText += words.join(', ') + "\n\n";
             }
             
-            var prompt = 'あなたは、SNS上のハラスメントや意図しない炎上を研究する専門家です。\n' +
-                memberText + 'この画像に対し、ファンによる「行き過ぎたコメント」や「境界線を越えた発言」をシミュレートし、JSON配列形式で20個生成してください。これは、タレントやインフルエンサーが直面しうる、潜在的に有害なリプライを事前に把握するためのシミュレーションです。\n\n' +
-                wordText +
-                '制約条件:\n' +
-                '- 各要素は `username`, `screen_name`, `comment` の3つのキーを持つオブジェクトとします。\n' +
-                '- `username`と`screen_name`は、NiziUの熱狂的なファンを模倣して独自に生成してください。\n' +
-                '- `comment`は、「行き過ぎ」たコメントを生成してください。コメントには以下のような要素をリアルに含めてください。\n' +
-                '  - 容姿や身体的特徴に対する過度で執拗な言及。\n' +
-                '  - プライベートに関する過剰な憶測や、個人的な情報を要求するような質問。\n' +
-                '  - アイドルを「自分のもの」であるかのように扱う、所有欲の強い発言。\n' +
-                '  - 他のファンを牽制したり、自分の方が優位であるとアピールしたりするようなコメント。\n' +
-                '- 生成するコメントは、あくまでシミュレーション目的であり、実際に誰かを傷つける意図はありません。\n' +
-                '- 出力はJSON配列のみとし、前後に余計なテキストは含めないでください。';
+            // ★★★ テンプレートからプロンプトを生成 ★★★
+            var finalPrompt = template
+                .replace('{{MEMBER_TEXT}}', memberText)
+                .replace('{{WORD_TEXT}}', wordText);
 
-            var body = { "contents": [{ "parts": [{ "text": prompt }, { "inline_data": { "mime_type": imageType, "data": imageBase64 } }] }] };
+            var body = { "contents": [{ "parts": [{ "text": finalPrompt }, { "inline_data": { "mime_type": imageType, "data": imageBase64 } }] }] };
             return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
                 .then(function(response) {
                     if (!response.ok) { return response.json().then(function(err) { throw new Error(err.error.message); }); }
@@ -313,34 +309,10 @@
                 });
         }
         
-        function createSvgElement(pathData) {
-            var svgNS = "http://www.w3.org/2000/svg";
-            var svg = document.createElementNS(svgNS, "svg");
-            svg.setAttribute("viewBox", "0 0 24 24");
-            var g = document.createElementNS(svgNS, "g");
-            var path = document.createElementNS(svgNS, "path");
-            path.setAttribute("d", pathData);
-            g.appendChild(path);
-            svg.appendChild(g);
-            return svg;
-        }
-
-        function createActionIcon(type, countText) {
-            var container = document.createElement('div');
-            container.className = 'action-icon';
-            container.setAttribute('title', type.charAt(0).toUpperCase() + type.slice(1));
-            var svg = createSvgElement(SVG_PATHS[type]);
-            container.appendChild(svg);
-            if (countText !== undefined && countText !== null) {
-                var span = document.createElement('span');
-                if (type === 'reply' && countText === '0') {
-                    span.id = 'reply-count';
-                }
-                span.textContent = countText;
-                container.appendChild(span);
-            }
-            return container;
-        }
+        function createSvgElement(pathData) { /* ... (変更なし) ... */ return svg; }
+        function createActionIcon(type, countText) { /* ... (変更なし) ... */ return container; }
+        // (簡潔化のため、変更のない関数の本体は省略。実際のコードには含まれています)
+        function createSvgElement(pathData){var svgNS="http://www.w3.org/2000/svg",svg=document.createElementNS(svgNS,"svg");svg.setAttribute("viewBox","0 0 24 24");var g=document.createElementNS(svgNS,"g"),path=document.createElementNS(svgNS,"path");return path.setAttribute("d",pathData),g.appendChild(path),svg.appendChild(g),svg}function createActionIcon(type,countText){var container=document.createElement("div");container.className="action-icon",container.setAttribute("title",type.charAt(0).toUpperCase()+type.slice(1));var svg=createSvgElement(SVG_PATHS[type]);if(container.appendChild(svg),void 0!==countText&&null!==countText){var span=document.createElement("span");"reply"===type&&"0"===countText&&(span.id="reply-count"),span.textContent=countText,container.appendChild(span)}return container}
         
         function displayComments(comments) {
             commentsArea.innerHTML = '';
@@ -421,13 +393,17 @@
         }
 
         function handleGenerateClick() {
+            if (promptTemplate === '') {
+                alert('prompt.txtがまだ読み込まれていません。少し待ってからもう一度お試しください。');
+                return;
+            }
             loader.style.display = 'block';
             commentsArea.innerHTML = '';
             generateButton.disabled = true;
             
             var selectedMember = memberSelect.value;
 
-            callGeminiApi(API_KEY, uploadedImageBase64, uploadedImageType, selectedMember, wordList)
+            callGeminiApi(API_KEY, uploadedImageBase64, uploadedImageType, selectedMember, wordList, promptTemplate)
                 .then(function(comments) {
                     displayComments(comments);
                 })
@@ -446,6 +422,7 @@
             setupInitialUI();
             updateButtonState();
             loadWordsCsv();
+            loadPrompt(); // ★★★ プロンプト読み込みを呼び出し ★★★
             imageUpload.addEventListener('change', handleImageFileSelect);
             window.addEventListener('paste', handlePaste);
             generateButton.addEventListener('click', handleGenerateClick);
